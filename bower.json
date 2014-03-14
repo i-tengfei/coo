@@ -1,0 +1,13 @@
+{
+  "name": "coo",
+  "version": "0.0.0",
+  "homepage": "https://github.com/mrtone/coo",
+  "authors": [
+    "mrtone <mrtone@malubei.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "requirejs": "~2.1.11",
+    "underscore": "~1.6.0"
+  }
+}
