@@ -33,6 +33,44 @@ define( function ( ) {
 
     Vec2.prototype = new Array( );
 
+    Vec2.prototype.val = function( x,y ){
+
+        if( typeof x === 'number' && typeof y === 'number' ){
+
+            this.x = x;
+            this.y = y;
+            
+            return this;
+
+        }else if( x instanceof Array && x.length === 2 && y === undefined ){
+
+            return this.val( x[ 0 ], x[ 1 ] );
+
+        }
+
+    };
+
+    Vec2.prototype.sub = function( x,y ){
+
+        if( typeof x === 'number' && typeof y === 'number' ){
+
+            this.x = this.x - x;
+            this.y = this.y - y;
+
+            return this;
+
+        }else if( x instanceof Vec2 && y instanceof Vec2 ){
+
+            return this.val( x ).sub( y );
+
+        }else if( x instanceof Array && y === undefined  ){
+
+            return this.sub( x[ 0 ], x[ 1 ] );
+
+        }
+
+    };
+
     return Vec2;
 
 } );

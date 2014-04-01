@@ -8,7 +8,7 @@ module.exports = function( grunt ) {
         connect: {
             server: {
                 options: {
-                    port: 80,
+                    port: 3333,
                     base: './',
                     keepalive: true
                 }

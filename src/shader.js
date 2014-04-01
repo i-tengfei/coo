@@ -1,4 +1,4 @@
-define( [ 'Base' ], function ( Base ) {
+define( [ 'Base', 'Attribute', 'Uniform' ], function ( Base, Attribute, Uniform ) {
 
     var Shader = Base.extend( {
 
@@ -7,28 +7,31 @@ define( [ 'Base' ], function ( Base ) {
             fragment: ''
         },
 
-        vertexShader: null,
-        fragmentShader: null,
-        shaderProgram: null,
-
-        attributes: {},
-
-        initialize: function( vertex, fragment, GL ){
-
-            this.set( {
-                vertex: vertex,
-                fragment: fragment
-            } );
+        initialize: function( GL, geometry, material ){
 
             this.GL = GL;
+            this.geometry = geometry;
+            this.material = material;
 
-            this.compile( );
+            Shader.super.initialize.call( this );
 
-        },
+            this.vertexShader = null;
+            this.fragmentShader = null;
+            this.program = null;
 
-        compile: function( ){
 
-            var GL = this.GL;
+            this.set( {
+                vertex: [
+                    'uniform mat4 projectionMatrix;',
+                    'uniform mat4 modelMatrix;',
+                    'uniform mat4 viewMatrix;',
+                    material.source.vertex
+                ].join( '\n' ),
+                fragment: [
+                    'precision highp float;',
+                    material.source.fragment
+                ].join( '\n' )
+            } );
 
             var vertexShader = this.vertexShader = GL.createShader( GL.VERTEX_SHADER );
             GL.shaderSource( vertexShader, this.get( 'vertex' ) );
@@ -38,24 +41,27 @@ define( [ 'Base' ], function ( Base ) {
             GL.shaderSource( fragmentShader, this.get( 'fragment' ) );
             GL.compileShader( fragmentShader );
 
-            var shaderProgram = this.shaderProgram = GL.createProgram( );
-            GL.attachShader( shaderProgram, vertexShader );
-            GL.attachShader( shaderProgram, fragmentShader );
-            GL.linkProgram( shaderProgram );
-            GL.useProgram( shaderProgram );
-
-            this.attributes[ 'position' ] = GL.getAttribLocation( shaderProgram, 'position' );
-
-            return this;
+            var program = this.program = GL.createProgram( );
+            GL.attachShader( program, vertexShader );
+            GL.attachShader( program, fragmentShader );
+            GL.linkProgram( program );
 
         },
 
-        enableAttributes: function( ){
+        use: function( ){
+            this.GL.useProgram( this.program );
+            return this;
+        },
+
+        draw: function( ){
 
             var GL = this.GL;
-            Shader._.each( this.attributes, function( x, i ){
-                GL.enableVertexAttribArray( x );
-            } );
+
+            if( this.geometry.attributes.index ){
+                GL.drawElements( GL.TRIANGLES, this.geometry.count, GL.UNSIGNED_SHORT, 0 );
+            }else{
+                GL.drawArrays( GL.TRIANGLES, 0, this.geometry.count );
+            }
 
         }
 

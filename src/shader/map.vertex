@@ -1,0 +1,22 @@
+attribute float height;
+attribute float number;
+float size = 533.34333 / 16.0 / 8.0;
+
+void main( void ) {
+    vec3 position;
+    vec2 uv;
+    float b = mod( number, 17.0 );
+    position.y = height;
+    if( b < 9.0 ){
+        position.x = -b * size;
+        position.z = -floor( number / 17.0 ) * size;
+        uv.x = b;
+        uv.y = floor( number / 17.0 );
+    }else{
+        position.x = -( 0.5 + mod( b, 9.0 ) ) * size;
+        position.z = -( 0.5 + floor( number / 17.0 ) ) * size;
+        uv.x = ( 0.5 + mod( b, 9.0 ) );
+        uv.y = ( 0.5 + floor( number / 17.0 ) );
+    }
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );
+}
