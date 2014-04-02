@@ -1,8 +1,4 @@
-define( [ 'PerspectiveCamera', 'Geometry', 'Material', 'Mesh', 'WebGLRenderer', 'Attribute' ], function ( PerspectiveCamera, Geometry, Material, Mesh, WebGLRenderer, Attribute ) {
-
-    var camera = new PerspectiveCamera( 75, 300 / 150, 1, 1000 );
-
-    var renderer = new WebGLRenderer( document.getElementById( 'coo' ) );
+define( [ 'View', 'Geometry', 'Material', 'Mesh', 'WebGLRenderer', 'Attribute' ], function ( View, Geometry, Material, Mesh, WebGLRenderer, Attribute ) {
 
     var geo = new Geometry( );
     geo.add( new Attribute( 'position', [
@@ -18,13 +14,15 @@ define( [ 'PerspectiveCamera', 'Geometry', 'Material', 'Mesh', 'WebGLRenderer', 
 
     var mat = new Material( 'basic' );
 
-    var mesh = new Mesh( geo, mat );
+    var mesh = new Mesh( {
+        geometry: geo,
+        material: mat
+    } );
 
-    camera.position.z = 500;
-    // camera.lookAt( );
+    var view = new View( );
+    view.setRenderer( new WebGLRenderer( document.getElementById( 'coo' ) ) );
+    view.camera.position.z = 500;
 
-    // camera.projectionMatrix.identity( );
-
-    renderer.render( mesh, camera );
+    view.add( mesh );
 
 } );

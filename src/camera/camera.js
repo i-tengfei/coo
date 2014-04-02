@@ -2,9 +2,14 @@ define( [ 'Node', 'Mat4' ], function( Node, Mat4 ) {
 
     var Camera = Node.extend( {
 
-        initialize: function( ){
-            Camera.super.initialize.call( this );
+        defaults: Node._.extend( {}, Node.prototype.defaults ),
+
+        initialize: function( cid, options ){
+            Camera.super.initialize.call( this, cid, options );
             this.projectionMatrix = new Mat4( );
+        },
+        init: function( options ){
+            Node.prototype.init.call( this, options );
         },
         lookAt: function( vector ){
 
@@ -13,6 +18,8 @@ define( [ 'Node', 'Mat4' ], function( Node, Mat4 ) {
             tmp.lookAt( this.position, vector, this.up );
 
             this.rotation.setFromRotationMatrix( tmp );
+
+            return this;
 
         }
 

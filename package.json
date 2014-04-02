@@ -1,0 +1,20 @@
+{
+  "name": "coo",
+  "version": "0.0.0",
+  "dependencies": {
+    "grunt": "~0.4.4",
+    "grunt-contrib-connect": "~0.7.1"
+  },
+  "devDependencies": {
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-requirejs": "~0.4.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mrtone/coo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mrtone/coo/issues"
+  },
+  "homepage": "https://github.com/mrtone/coo"
+}

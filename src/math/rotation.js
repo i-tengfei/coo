@@ -1,8 +1,17 @@
 define( [ 'Quaternion' ], function ( Quaternion ) {
 
     function Rotation( x, y, z, order ){
+
+        if( ! ( this instanceof Rotation ) ){
+            return new Rotation( x, y, z, order );
+        }
+
         this.__quaternion = new Quaternion( );
-        this.set( x||0, y||0, z||0, order||'XYZ' )
+        if( Array.isArray( x ) && y === undefined ){
+            this.set( x[ 0 ], x[ 1 ], x[ 2 ], 'XYZ' )    
+        }else{
+            this.set( x||0, y||0, z||0, order||'XYZ' );
+        }
     }
 
     Rotation.prototype = {

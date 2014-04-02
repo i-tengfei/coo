@@ -8,6 +8,10 @@ define( function ( ) {
 
         var arr = Array.apply( this, arguments );
 
+        if( Array.isArray( x ) && y === undefined ){
+            arr = x;
+        }
+
         this[ 0 ] = arr[ 0 ] || 0;
         this[ 1 ] = arr[ 1 ] || 0;
         this[ 2 ] = arr[ 2 ] || 0;

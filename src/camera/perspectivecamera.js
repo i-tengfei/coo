@@ -2,17 +2,27 @@ define( [ 'Camera' ], function( Camera ) {
 
     var PerspectiveCamera = Camera.extend( {
 
-        initialize: function( fov, aspect, near, far ){
+        defaults: Camera._.extend( {
+            fov: 45,
+            aspect: 1,
+            near: 0.1,
+            far: 2000
+        }, Camera.prototype.defaults ),
 
-            PerspectiveCamera.super.initialize.call( this );
+        initialize: function( cid, options ){
 
-            this.fov = fov || 45;
-            this.aspect = aspect || 1;
-            this.near = near || 0.1;
-            this.far = far || 2000;
+            PerspectiveCamera.super.initialize.call( this, cid, options );
             
             this.updateProjectionMatrix( );
 
+        },
+
+        init: function( options ){
+            Camera.prototype.init.call( this, options );
+            this.fov = options.fov;
+            this.aspect = options.aspect;
+            this.near = options.near;
+            this.far = options.far;
         },
 
         updateProjectionMatrix: function( ){

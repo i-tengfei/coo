@@ -1,167 +1,145 @@
-define( function( require, exports, module ) {
+define( [ 'Renderer' ], function( Renderer ) {
 
-	var D3 = require( 'D3.Global' );
-	var Renderer = require( 'D3.Renderer' );
-	var Mathutils = require( 'D3.Mathutils' );
+    function epsilon( v ){
+        return Math.abs( v ) < 0.000001 ? 0 : v;
+    }
 
-	function CSS3DRenderer( element ){
+    function cameraCSSMatrix( matrix ){
 
-		this.cameraElement = document.createElement( 'div' );
+        return 'matrix3d(' +
+            epsilon(   matrix[ 0 ]  ) + ',' +
+            epsilon( - matrix[ 1 ]  ) + ',' +
+            epsilon(   matrix[ 2 ]  ) + ',' +
+            epsilon(   matrix[ 3 ]  ) + ',' +
+            epsilon(   matrix[ 4 ]  ) + ',' +
+            epsilon( - matrix[ 5 ]  ) + ',' +
+            epsilon(   matrix[ 6 ]  ) + ',' +
+            epsilon(   matrix[ 7 ]  ) + ',' +
+            epsilon(   matrix[ 8 ]  ) + ',' +
+            epsilon( - matrix[ 9 ]  ) + ',' +
+            epsilon(   matrix[ 10 ] ) + ',' +
+            epsilon(   matrix[ 11 ] ) + ',' +
+            epsilon(   matrix[ 12 ] ) + ',' +
+            epsilon( - matrix[ 13 ] ) + ',' +
+            epsilon(   matrix[ 14 ] ) + ',' +
+            epsilon(   matrix[ 15 ] ) +
+        ')';
 
-		this.cameraElement.style.WebkitTransformStyle = 'preserve-3d';
-		this.cameraElement.style.MozTransformStyle = 'preserve-3d';
-		this.cameraElement.style.oTransformStyle = 'preserve-3d';
-		this.cameraElement.style.transformStyle = 'preserve-3d';
+    }
 
+    function nodeMatrix( matrix ) {
 
-		Renderer.call( this, element || document.createElement( 'div' ) );
+        return 'translate3d(-50%,-50%,0) matrix3d(' +
+            epsilon(   matrix[ 0 ]  ) + ',' +
+            epsilon(   matrix[ 1 ]  ) + ',' +
+            epsilon(   matrix[ 2 ]  ) + ',' +
+            epsilon(   matrix[ 3 ]  ) + ',' +
+            epsilon( - matrix[ 4 ]  ) + ',' +
+            epsilon( - matrix[ 5 ]  ) + ',' +
+            epsilon( - matrix[ 6 ]  ) + ',' +
+            epsilon( - matrix[ 7 ]  ) + ',' +
+            epsilon(   matrix[ 8 ]  ) + ',' +
+            epsilon(   matrix[ 9 ]  ) + ',' +
+            epsilon(   matrix[ 10 ] ) + ',' +
+            epsilon(   matrix[ 11 ] ) + ',' +
+            epsilon(   matrix[ 12 ] ) + ',' +
+            epsilon(   matrix[ 13 ] ) + ',' +
+            epsilon(   matrix[ 14 ] ) + ',' +
+            epsilon(   matrix[ 15 ] ) +
+        ')';
 
-		element = this.element( );
-		element.style.overflow = 'hidden';
+    };
 
-		element.style.WebkitTransformStyle = 'preserve-3d';
-		element.style.WebkitPerspectiveOrigin = '50% 50%';
+    var CSS3DRenderer = Renderer.extend( {
 
-		element.style.MozTransformStyle = 'preserve-3d';
-		element.style.MozPerspectiveOrigin = '50% 50%';
+        initialize: function( element ){
 
-		element.style.oTransformStyle = 'preserve-3d';
-		element.style.oPerspectiveOrigin = '50% 50%';
+            CSS3DRenderer.super.initialize.call( this, element || document.createElement( 'div' ) );
 
-		element.style.transformStyle = 'preserve-3d';
-		element.style.perspectiveOrigin = '50% 50%';
+            this.cameraElement = document.createElement( 'div' );
 
+            this.cameraElement.style.WebkitTransformStyle = 'preserve-3d';
+            this.cameraElement.style.MozTransformStyle = 'preserve-3d';
+            this.cameraElement.style.oTransformStyle = 'preserve-3d';
+            this.cameraElement.style.transformStyle = 'preserve-3d';
 
-		element.appendChild( this.cameraElement );
+            element = this.element;
+            element.style.overflow = 'hidden';
 
-	}
+            element.style.WebkitTransformStyle = 'preserve-3d';
+            element.style.MozTransformStyle = 'preserve-3d';
+            element.style.oTransformStyle = 'preserve-3d';
+            element.style.transformStyle = 'preserve-3d';
 
-	CSS3DRenderer.prototype = Object.create( Renderer.prototype );
-	
-	CSS3DRenderer.prototype.render = function( scene, camera ){
-		
-		var size = this.size( );
+            element.appendChild( this.cameraElement );
 
-		var fov = 0.5 / Math.tan( Mathutils.deg2Rad( camera.fov * 0.5 ) ) * size.y( );
+            this.__defineSetter__( 'width', function( w ){
+                var element = this.element;
+                this.__width = w;
+                element.style.width = w + 'px';
+                element.tagName.toLowerCase( ) === 'canvas' && ( this.element.width = w );
+                this.cameraElement.style.width = w;
+            } );
+            this.__defineSetter__( 'height', function( h ){
+                var element = this.element;
+                this.__height = h;
+                this.element.style.height = h + 'px';
+                element.tagName.toLowerCase( ) === 'canvas' && ( this.element.height = h );
+                this.cameraElement.style.height = h;
+            } );
 
-		var element = this.element( );
-		element.style.WebkitPerspective = fov + "px";
-		element.style.MozPerspective = fov + "px";
-		element.style.oPerspective = fov + "px";
-		element.style.perspective = fov + "px";
+        },
 
-		var projector = this.projector;
+        render: function( scene, camera ){
 
-		var objects = projector.projectScene( scene, camera ).objects;
+            var fov = 0.5 / Math.tan( camera.fov * 0.5 * ( Math.PI / 180 ) ) * this.height;
 
-		var widthHalf = size.x( ) * 0.5, heightHalf = size.y( ) * 0.5;
+            var element = this.element;
 
-		var style = 'translate3d(0,0,' + fov + 'px)' + this.cameraCSSMatrix( projector.cameraViewMatrix ) + ' translate3d(' + widthHalf + 'px,' + heightHalf + 'px, 0)';
+            element.style.WebkitPerspective = fov + 'px';
+            element.style.MozPerspective = fov + 'px';
+            element.style.oPerspective = fov + 'px';
+            element.style.perspective = fov + 'px';
 
-		this.cameraElement.style.WebkitTransform = style;
-		this.cameraElement.style.MozTransform = style;
-		this.cameraElement.style.oTransform = style;
-		this.cameraElement.style.transform = style;
+            var projector = this.projector;
 
-		for ( var i = 0, il = objects.length; i < il; i ++ ) {
+            var objects = projector.projectScene( scene, camera ).css3DObjects;
 
-			var object = objects[ i ];
+            var style = 'translate3d(0,0,' + fov + 'px)' + cameraCSSMatrix( projector.cameraViewMatrix ) + 
+                ' translate3d(' + this.width * 0.5 + 'px,' + this.height * 0.5 + 'px, 0)';
 
-			if ( object.__type__ === D3.objectTypes.CSS3D ) {
+            var cameraElement = this.cameraElement;
 
-				var element = object.element;
+            cameraElement.style.WebkitTransform = style;
+            cameraElement.style.MozTransform = style;
+            cameraElement.style.oTransform = style;
+            cameraElement.style.transform = style;
+
+            for ( var i = 0, il = objects.length; i < il; i ++ ) {
+
+                var object = objects[ i ];
+
+                var element = object.element;
  
-				style = this.objectCSSMatrix( object.matrixWorld );
+                style = nodeMatrix( object.worldMatrix );
 
-				element.style.WebkitTransform = style;
-				element.style.MozTransform = style;
-				element.style.oTransform = style;
-				element.style.transform = style;
+                element.style.WebkitTransform = style;
+                element.style.MozTransform = style;
+                element.style.oTransform = style;
+                element.style.transform = style;
 
-				if ( !element.parentNode ) {
+                if ( !element.parentNode ) {
 
-					this.cameraElement.appendChild( element );
+                    this.cameraElement.appendChild( element );
 
-				}
+                }
 
-			}
+            }
 
-		}
+        }
 
-	};
+    } );
 
-	CSS3DRenderer.prototype.size = function( w, h ) {
-
-		var v = Renderer.prototype.size.call( this, w, h );
-
-		if( w !== undefined ){
-
-			var size = this.size( );
-			this.cameraElement.style.width = size.x( ) + 'px';
-			this.cameraElement.style.height = size.y( ) + 'px';
-		
-		}
-
-		return v;
-
-	};
-
-	CSS3DRenderer.prototype.epsilon = function ( value ) {
-		return Math.abs( value ) < 0.000001 ? 0 : value;
-	};
-
-	CSS3DRenderer.prototype.cameraCSSMatrix = function ( matrix ) {
-
-		var elements = matrix.array,
-			epsilon = this.epsilon;
-
-		return 'matrix3d(' +
-			epsilon(   elements[ 0 ]  ) + ',' +
-			epsilon( - elements[ 1 ]  ) + ',' +
-			epsilon(   elements[ 2 ]  ) + ',' +
-			epsilon(   elements[ 3 ]  ) + ',' +
-			epsilon(   elements[ 4 ]  ) + ',' +
-			epsilon( - elements[ 5 ]  ) + ',' +
-			epsilon(   elements[ 6 ]  ) + ',' +
-			epsilon(   elements[ 7 ]  ) + ',' +
-			epsilon(   elements[ 8 ]  ) + ',' +
-			epsilon( - elements[ 9 ]  ) + ',' +
-			epsilon(   elements[ 10 ] ) + ',' +
-			epsilon(   elements[ 11 ] ) + ',' +
-			epsilon(   elements[ 12 ] ) + ',' +
-			epsilon( - elements[ 13 ] ) + ',' +
-			epsilon(   elements[ 14 ] ) + ',' +
-			epsilon(   elements[ 15 ] ) +
-		')';
-
-	};
-
-	CSS3DRenderer.prototype.objectCSSMatrix = function ( matrix ) {
-
-		var elements = matrix.array,
-			epsilon = this.epsilon;
-
-		return 'translate3d(-50%,-50%,0) matrix3d(' +
-			epsilon(   elements[ 0 ]  ) + ',' +
-			epsilon(   elements[ 1 ]  ) + ',' +
-			epsilon(   elements[ 2 ]  ) + ',' +
-			epsilon(   elements[ 3 ]  ) + ',' +
-			epsilon( - elements[ 4 ]  ) + ',' +
-			epsilon( - elements[ 5 ]  ) + ',' +
-			epsilon( - elements[ 6 ]  ) + ',' +
-			epsilon( - elements[ 7 ]  ) + ',' +
-			epsilon(   elements[ 8 ]  ) + ',' +
-			epsilon(   elements[ 9 ]  ) + ',' +
-			epsilon(   elements[ 10 ] ) + ',' +
-			epsilon(   elements[ 11 ] ) + ',' +
-			epsilon(   elements[ 12 ] ) + ',' +
-			epsilon(   elements[ 13 ] ) + ',' +
-			epsilon(   elements[ 14 ] ) + ',' +
-			epsilon(   elements[ 15 ] ) +
-		')';
-
-	};
-
-	module.exports = CSS3DRenderer;
+    return CSS3DRenderer;
 
 } );

@@ -1,4 +1,4 @@
-define( [ 'Base', 'Mat4', 'Display' ], function( Base, Mat4, Display ) {
+define( [ 'Base', 'Mat4', 'Display', 'Mesh', 'CSS3D' ], function( Base, Mat4, Display, Mesh, CSS3D ) {
 
     var Projector = Base.extend( {
 
@@ -10,6 +10,7 @@ define( [ 'Base', 'Mat4', 'Display' ], function( Base, Mat4, Display ) {
             this.objects            = [ ];
             this.transparentObjects = [ ];
             this.opaqueObjects      = [ ];
+            this.css3DObjects       = [ ];
             this.lights             = [ ];
 
         },
@@ -26,6 +27,7 @@ define( [ 'Base', 'Mat4', 'Display' ], function( Base, Mat4, Display ) {
             var objects             = this.objects              = [ ];
             var transparentObjects  = this.transparentObjects   = [ ];
             var opaqueObjects       = this.opaqueObjects        = [ ];
+            var css3DObjects        = this.css3DObjects         = [ ];
             var lights              = this.lights               = [ ];
 
             ( function( node ){
@@ -34,15 +36,21 @@ define( [ 'Base', 'Mat4', 'Display' ], function( Base, Mat4, Display ) {
 
                     if( !!node.visible ) {
 
-                    // if( object3D.material.alpha !== 1 ) {
+                        if( node instanceof Mesh ){
 
-                        // transparentObjects.push( object3D );
+                            // if( object3D.material.alpha !== 1 ) {
 
-                    // } else {
+                                // transparentObjects.push( object3D );
 
-                        opaqueObjects.push( node );
-                    
-                    // }
+                            // } else {
+
+                                opaqueObjects.push( node );
+                            
+                            // }
+                        }else if( node instanceof CSS3D ){
+                            css3DObjects.push( node );
+                        }
+
                     }
 
                 }

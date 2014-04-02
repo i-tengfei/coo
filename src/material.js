@@ -1,4 +1,4 @@
-define( [ 'Base', 'text!shader/basic.vertex', 'text!shader/basic.fragment' ], function ( Base, basicVertex, basicFragment ) {
+define( [ 'UUID', 'text!shader/basic.vertex', 'text!shader/basic.fragment' ], function ( UUID, basicVertex, basicFragment ) {
 
     var defaultShaders = {
         basic: {
@@ -7,25 +7,25 @@ define( [ 'Base', 'text!shader/basic.vertex', 'text!shader/basic.fragment' ], fu
         }
     };
 
-    var Material = Base.extend( {
+    var Material = UUID.extend( {
 
-        source: {
-            vertex: '',
-            fragment: ''
+        defaults: {
+            source: defaultShaders[ 'basic' ]
         },
 
-        initialize: function( shader ){
+        initialize: function( cid, options ){
 
-            Material.super.initialize.call( this );
-
-            if( typeof shader === 'string' ){
-                this.source = defaultShaders[ shader ];
-            }else{
-                this.source = shader;
-            }
-
+            Material.super.initialize.call( this, cid, options );
             this.uniforms = {};
 
+        },
+
+        init: function( options ){
+            if( typeof options.source === 'string' ){
+                this.source = defaultShaders[ options.source ];
+            }else{
+                this.source = options.source;
+            }
         },
 
         add: function( uniforms ){

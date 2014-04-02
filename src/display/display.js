@@ -2,15 +2,19 @@ define( [ 'Node' ], function ( Node ) {
 
     var Display = Node.extend( {
 
-        initialize: function( geometry, material ){
+        defaults: Node._.extend( {
+            visible: true
+        }, Node.prototype.defaults ),
 
-            Display.super.initialize.call( this );
+        initialize: function( cid, options ){
 
-            this.geometry = geometry;
-            this.material = material;
-            this.visible = true;
-            this.mode = 'TRIANGLES';
+            Display.super.initialize.call( this, cid, options );
 
+        },
+
+        init: function( options ){
+            Node.prototype.init.call( this, options );
+            this.visible = options.visible;
         }
         
     } );

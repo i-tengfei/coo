@@ -43,12 +43,7 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
                 return this.__GL;
             } );
 
-
-
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            this.GL.viewport( 0, 0, canvas.width, canvas.height );
+            this.GL.viewport( 0, 0, this.width, this.height );
 
         },
 
@@ -111,16 +106,6 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
 
             var GL = this.GL,
                 projector = this.projector;
-
-// console.log(GL.TEXTURE_2D)
-// console.log(GL.TEXTURE)
-// console.log(GL.INVALID_VALUE)
-// console.log(GL.INVALID_OPERATION)
-// console.log(GL.OUT_OF_MEMORY)
-// console.log(GL.SCISSOR_TEST)
-// console.log(GL.POLYGON_OFFSET_FILL)
-// console.log(GL.SAMPLE_ALPHA_TO_COVERAGE)
-// console.log(GL.SAMPLE_COVERAGE)
 
             var material    = display.material,
                 geometry    = display.geometry;

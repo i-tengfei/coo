@@ -1,10 +1,18 @@
-define( [ 'Base', 'Mat4', 'Vec3', 'Rotation' ], function ( Base, Mat4, Vec3, Rotation ) {
+define( [ 'UUID', 'Mat4', 'Vec3', 'Rotation' ], function ( UUID, Mat4, Vec3, Rotation ) {
 
-    var Node = Base.extend( {
+    var Node = UUID.extend( {
 
-        initialize: function( ){
+        defaults: {
+            position: [0,0,0],
+            rotation: [0,0,0],
+            target: [0,0,0],
+            scale: [1,1,1],
+            up: [0,1,0]
+        },
 
-            Node.super.initialize.call( this );
+        initialize: function( cid, options ){
+
+            Node.super.initialize.call( this, cid, options );
 
             this.localMatrix = Mat4( );
             this.worldMatrix = Mat4( );
@@ -12,13 +20,18 @@ define( [ 'Base', 'Mat4', 'Vec3', 'Rotation' ], function ( Base, Mat4, Vec3, Rot
             this.parent = null;
             this.children = [];
 
-            this.up = new Vec3( 0,1,0 );
+            return this;
 
-            this.position = new Vec3( );
-            this.rotation = new Rotation( );
-            this.scale = new Vec3( 1,1,1 );
+        },
 
-            this.target = new Vec3( );
+        init: function( options ){
+
+            this.position = Vec3( options.position );
+            this.rotation = Rotation( options.rotation );
+            this.target = Vec3( options.target );
+            this.scale = Vec3( options.scale );
+            this.up = Vec3( options.up );
+
         },
 
         add: function( child ){
@@ -48,6 +61,7 @@ define( [ 'Base', 'Mat4', 'Vec3', 'Rotation' ], function ( Base, Mat4, Vec3, Rot
                 throw( '子对象必须继承于 Node' );
 
             }
+            return this;
         },
 
         remove: function( child ){
@@ -58,11 +72,13 @@ define( [ 'Base', 'Mat4', 'Vec3', 'Rotation' ], function ( Base, Mat4, Vec3, Rot
                 this.children.splice( ind, 1 );
 
             }
+            return this;
         },
 
         updateLocalMatrix: function( ){
             this.localMatrix.compose( this.position, this.rotation, this.scale );
             this.__worldMatrixNeedsUpdate = true;
+            return this;
         },
 
         updateWorldMatrix: function( force ){
@@ -92,6 +108,7 @@ define( [ 'Base', 'Mat4', 'Vec3', 'Rotation' ], function ( Base, Mat4, Vec3, Rot
                 this.children[ i ].updateWorldMatrix( force );
 
             }
+            return this;
 
         }
 

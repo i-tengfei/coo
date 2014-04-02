@@ -5,8 +5,6 @@ define( [ 'Class', 'Events', 'underscore' ], function( Class, Events, _ ) {
     // Thanks to:
     //  - https://github.com/aralejs/base/blob/master/src/base.js
 
-    var guid = 0;
-
     var Base = Class.create( {
 
         Statics: {
@@ -115,10 +113,6 @@ define( [ 'Class', 'Events', 'underscore' ], function( Class, Events, _ ) {
         } ],
 
         initialize: function( config ){
-            this.__GUID__ = genGUID( );
-            this.__GUID_NUM__ = function( ){
-                return guid;
-            };
             this.initAttrs( config );
             parseEventsFromInstance( this, this.attrs );
         },
@@ -540,10 +534,6 @@ define( [ 'Class', 'Events', 'underscore' ], function( Class, Events, _ ) {
         };
 
         this[methodName].__isAspected = true;
-    }
-
-    function genGUID( ){
-        return ++guid;
     }
 
     return Base;

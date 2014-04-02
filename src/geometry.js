@@ -1,11 +1,15 @@
-define( [ 'Base' ], function ( Base ) {
+define( [ 'UUID' ], function ( UUID ) {
 
-    var Geometry = Base.extend( {
+    var Geometry = UUID.extend( {
 
-        initialize: function( ){
-            Geometry.super.initialize.call( this );
+        initialize: function( cid, options ){
+            Geometry.super.initialize.call( this, cid, options );
             this.count = undefined;
             this.attributes = {};
+        },
+
+        init: function( ){
+
         },
 
         add: function( attribute ){

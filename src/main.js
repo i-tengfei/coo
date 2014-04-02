@@ -7,6 +7,7 @@ require.config( {
         'Class': 'core/class',
         'Events': 'core/events',
         'Base': 'core/base',
+        'UUID': 'core/uuid',
         'Vec2': 'math/vec2',
         'Vec3': 'math/vec3',
         'Vec4': 'math/vec4',
@@ -21,8 +22,11 @@ require.config( {
         'Uniform': 'uniform',
         'Renderer': 'renderer/renderer',
         'WebGLRenderer': 'renderer/webglrenderer',
-        'Mesh': 'display/mesh',
+        'CSS3DRenderer': 'renderer/css3drenderer',
         'Display': 'display/display',
+        'Mesh': 'display/mesh',
+        'CSS3D': 'display/css3d',
+        'View': 'view',
         'CONST': 'const',
 
 
