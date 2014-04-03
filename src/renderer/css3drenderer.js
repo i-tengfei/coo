@@ -78,14 +78,14 @@ define( [ 'Renderer' ], function( Renderer ) {
                 this.__width = w;
                 element.style.width = w + 'px';
                 element.tagName.toLowerCase( ) === 'canvas' && ( this.element.width = w );
-                this.cameraElement.style.width = w;
+                this.cameraElement.style.width = w + 'px';
             } );
             this.__defineSetter__( 'height', function( h ){
                 var element = this.element;
                 this.__height = h;
                 this.element.style.height = h + 'px';
                 element.tagName.toLowerCase( ) === 'canvas' && ( this.element.height = h );
-                this.cameraElement.style.height = h;
+                this.cameraElement.style.height = h + 'px';
             } );
 
         },
