@@ -3462,13 +3462,13 @@ define( 'Renderer',[ 'Base', 'Projector' ], function( Base, Projector ) {
                 var element = this.element;
                 this.__width = w;
                 element.style.width = w + 'px';
-                element.tagName.toLowerCase( ) === 'canvas' && ( this.element.width = w );
+                element.tagName.toLowerCase( ) === 'canvas' && ( element.width = w );
             } );
             this.__defineSetter__( 'height', function( h ){
                 var element = this.element;
                 this.__height = h;
-                this.element.style.height = h + 'px';
-                element.tagName.toLowerCase( ) === 'canvas' && ( this.element.height = h );
+                element.style.height = h + 'px';
+                element.tagName.toLowerCase( ) === 'canvas' && ( element.height = h );
             } );
 
         },
@@ -4176,10 +4176,18 @@ define( 'CSS3DRenderer',[ 'Renderer' ], function( Renderer ) {
             element.appendChild( this.cameraElement );
 
             this.__defineSetter__( 'width', function( w ){
+                var element = this.element;
                 this.__width = w;
+                element.style.width = w + 'px';
+                element.tagName.toLowerCase( ) === 'canvas' && ( element.width = w );
+                this.cameraElement.style.width = w + 'px';
             } );
             this.__defineSetter__( 'height', function( h ){
+                var element = this.element;
                 this.__height = h;
+                element.style.height = h + 'px';
+                element.tagName.toLowerCase( ) === 'canvas' && ( element.height = h );
+                this.cameraElement.style.height = h + 'px';
             } );
 
         },

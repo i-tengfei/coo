@@ -28,13 +28,13 @@ define( [ 'Base', 'Projector' ], function( Base, Projector ) {
                 var element = this.element;
                 this.__width = w;
                 element.style.width = w + 'px';
-                element.tagName.toLowerCase( ) === 'canvas' && ( this.element.width = w );
+                element.tagName.toLowerCase( ) === 'canvas' && ( element.width = w );
             } );
             this.__defineSetter__( 'height', function( h ){
                 var element = this.element;
                 this.__height = h;
-                this.element.style.height = h + 'px';
-                element.tagName.toLowerCase( ) === 'canvas' && ( this.element.height = h );
+                element.style.height = h + 'px';
+                element.tagName.toLowerCase( ) === 'canvas' && ( element.height = h );
             } );
 
         },
