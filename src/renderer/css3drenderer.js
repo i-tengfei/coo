@@ -128,7 +128,7 @@ define( [ 'Renderer' ], function( Renderer ) {
                 element.style.oTransform = style;
                 element.style.transform = style;
 
-                if ( !element.parentNode ) {
+                if ( !element.parentNode || element.parentNode !== this.cameraElement ) {
 
                     this.cameraElement.appendChild( element );
 
