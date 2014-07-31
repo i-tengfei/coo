@@ -1,11 +1,12 @@
-define( [ 'Base', 'Mat4', 'Display', 'Mesh', 'CSS3D' ], function( Base, Mat4, Display, Mesh, CSS3D ) {
+define( [ 'Base', 'Mat4', 'Display', 'Mesh', 'CSS3D', 'Frustum' ], function( Base, Mat4, Display, Mesh, CSS3D, Frustum ) {
 
     var Projector = Base.extend( {
 
         initialize: function( ){
 
-            this.projectionMatrix = new Mat4( );
-            this.cameraViewMatrix = new Mat4( );
+            this.projectionMatrix = Mat4( );
+            this.cameraViewMatrix = Mat4( );
+            this.frustum = Frustum( );
 
             this.objects            = [ ];
             this.transparentObjects = [ ];
@@ -19,10 +20,11 @@ define( [ 'Base', 'Mat4', 'Display', 'Mesh', 'CSS3D' ], function( Base, Mat4, Di
 
             camera.parent || scene.add( camera );
 
-            scene.updateWorldMatrix( );
+            scene.updateWorldMatrix( true );
 
-            this.projectionMatrix = camera.projectionMatrix;
-            this.cameraViewMatrix.invert( camera.worldMatrix );
+            var projectionMatrix = this.projectionMatrix = camera.projectionMatrix;
+            var cameraViewMatrix = this.cameraViewMatrix.invert( camera.worldMatrix );
+            var frustum = this.frustum.setFromMat( Mat4( ).multiply( projectionMatrix, cameraViewMatrix ) );
             
             var objects             = this.objects              = [ ];
             var transparentObjects  = this.transparentObjects   = [ ];
@@ -36,19 +38,23 @@ define( [ 'Base', 'Mat4', 'Display', 'Mesh', 'CSS3D' ], function( Base, Mat4, Di
 
                     if( !!node.visible ) {
 
-                        if( node instanceof Mesh ){
+                        if( frustum.intersectsSphere( node.sphere ) ){
 
-                            // if( object3D.material.alpha !== 1 ) {
+                            if( node instanceof Mesh ){
 
-                                // transparentObjects.push( object3D );
+                                // if( object3D.material.alpha !== 1 ) {
 
-                            // } else {
+                                    // transparentObjects.push( object3D );
 
-                                opaqueObjects.push( node );
-                            
-                            // }
-                        }else if( node instanceof CSS3D ){
-                            css3DObjects.push( node );
+                                // } else {
+
+                                    opaqueObjects.push( node );
+                                
+                                // }
+                            }else if( node instanceof CSS3D ){
+                                css3DObjects.push( node );
+                            }
+
                         }
 
                     }

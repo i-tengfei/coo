@@ -4,12 +4,14 @@ define( [ 'Node' ], function ( Node ) {
 
         defaults: Node._.extend( {}, Node.prototype.defaults ),
 
-        initialize: function( cid, options ){
-            Scene.super.initialize.call( this, cid, options );
+        initialize: function( options ){
+            Scene.super.initialize.call( this, options );
         },
 
-        init: function( options ){
-            Node.prototype.init.call( this, options );
+        initOptions: function( options ){
+
+            Scene.super.initOptions.call( this, options );
+            
         }
 
     } );

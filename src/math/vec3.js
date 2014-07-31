@@ -63,6 +63,11 @@ define( function ( ) {
 
     };
 
+    Vec3.prototype.copy = function( v ){
+        this.val( v.x, v.y, v.z );
+        return this;
+    };
+
     Vec3.prototype.clone = function( ){
         return Vec3( ).val( this );
     };
@@ -106,6 +111,32 @@ define( function ( ) {
         }else if( x instanceof Array && y === undefined  ){
 
             return this.add( x[ 0 ], x[ 1 ], x[ 2 ] );
+
+        }
+
+    };
+
+    Vec3.prototype.multiply = function( x, y, z ) {
+
+        if( typeof x === 'number' && typeof y === 'number' && typeof z === 'number' ){
+
+            this.x *= x;
+            this.y *= y;
+            this.z *= z;
+
+            return this;
+
+        }else if( x instanceof Vec3 && y instanceof Vec3 && z === undefined ){
+
+            return this.val( x ).multiply( y );
+
+        }else if( x instanceof Vec3 && y === undefined ){
+
+            return this.multiply( x.x, x.y, x.z );
+
+        }else if( typeof x === 'number' && y === undefined ){
+
+            return this.multiply( x, x, x );
 
         }
 
@@ -159,6 +190,18 @@ define( function ( ) {
         return Math.sqrt( this.length2( ) );
     
     };
+
+    Vec3.prototype.applyMat4 = function ( m ) {
+
+        var x = this.x, y = this.y, z = this.z;
+
+        this.x = m[0] * x + m[4] * y + m[8 ] * z + m[12];
+        this.y = m[1] * x + m[5] * y + m[9 ] * z + m[13];
+        this.z = m[2] * x + m[6] * y + m[10] * z + m[14];
+
+        return this;
+
+    },
 
     Vec3.prototype.normalize = function( ){
 

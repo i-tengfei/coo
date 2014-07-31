@@ -1,35 +1,53 @@
-define( [ 'UUID', 'text!shader/basic.vertex', 'text!shader/basic.fragment' ], function ( UUID, basicVertex, basicFragment ) {
+define( [ 'Base' ], function ( Base ) {
 
-    var defaultShaders = {
-        basic: {
-            vertex: basicVertex,
-            fragment: basicFragment
-        }
-    };
+    var Material = Base.extend( {
 
-    var Material = UUID.extend( {
+        defaults: Base._.extend( { }, Base.prototype.defaults ),
 
-        defaults: {
-            source: defaultShaders[ 'basic' ]
-        },
+        initialize: function( options, pass ){
 
-        initialize: function( cid, options ){
+            Material.super.initialize.call( this, options );
 
-            Material.super.initialize.call( this, cid, options );
-            this.uniforms = {};
+            this.values = {};
+            this.pass = pass;
 
         },
 
-        init: function( options ){
-            if( typeof options.source === 'string' ){
-                this.source = defaultShaders[ options.source ];
-            }else{
-                this.source = options.source;
+        initOptions: function( options ){
+
+            Material.super.initOptions.call( this, options );
+
+        },
+
+        addValue: function( name, value ){
+
+            this.values[ name ] == undefined && ( this.values[ name ] = {
+                value: value,
+                dirty: true
+            } );
+
+        },
+
+        setValue: function( name, value ){
+
+            if( this.values.hasOwnProperty( name ) ){
+                this.values[ name ] = {
+                    value: value,
+                    dirty: true
+                };
             }
+
         },
 
-        add: function( uniforms ){
-            this.uniforms[ uniforms.name ] = uniforms;
+        render: function( ){
+            var pass = this.pass;
+            Base._.each( this.values, function( value, name ){
+
+                if( value.dirty ){
+                    pass.find( name ).data = value.value;
+                }
+
+            } );
         }
 
     } );

@@ -1,4 +1,6 @@
-define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer, Vec4, Shader, Uniform, CONST ) {
+define( [ 'Renderer', 'Uniform', 'CONST', 'Mat3', '' ], function( Renderer, Uniform, CONST, Mat3 ) {
+
+    var _ = Renderer._;
 
     var WebGLRenderer = Renderer.extend( {
 
@@ -16,8 +18,7 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
             'WEBGL_draw_buffers'
         ],
 
-        attrs: {
-
+        defaults: _.extend( {
             webGLContextAttrs: {
                 alpha: true,
                 depth: true,
@@ -25,25 +26,31 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
                 antialias: true,
                 premultipliedAlpha: true,
                 preserveDrawingBuffer: false
-            },
+            }
+        }, Renderer.prototype.defaults ),
 
-            color: Vec4( )
+        initialize: function( options ){
 
-        },
-
-        initialize: function( canvas ){
-
-            this.extensions = {};
+            this.__extensions = {};
             this.shader = null;
 
-            WebGLRenderer.super.initialize.call( this, canvas );
+            WebGLRenderer.super.initialize.call( this, options );
             
             this.__GL = this.context;
             this.__defineGetter__( 'GL', function( ){
                 return this.__GL;
             } );
 
+            this.__programPool = {};
+
             this.GL.viewport( 0, 0, this.width, this.height );
+
+        },
+
+        initOptions: function( options ){
+
+            WebGLRenderer.super.initOptions.call( this, options );
+            this.webGLContextAttrs = options.webGLContextAttrs;
 
         },
 
@@ -52,7 +59,7 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
             WebGLRenderer.super.render.call( this, scene, camera );
 
             this.renderDisplayArray( this.projector.opaqueObjects );
-            this.renderDisplayArray( this.projector.transparentObjects );
+            // this.renderDisplayArray( this.projector.transparentObjects );
 
         },
 
@@ -60,9 +67,9 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
 
             try {
 
-                var GL = canvas.getContext( 'webgl', this.get( 'webGLContextAttrs' ) ) || canvas.getContext( 'experimental-webgl', this.get( 'webGLContextAttrs' ) );
+                var GL = canvas.getContext( 'webgl', this.webGLContextAttrs ) || canvas.getContext( 'experimental-webgl', this.webGLContextAttrs );
                 // 添加扩展
-                Renderer._.each( this.EXTENSIONS, function( x ){
+                _.each( this.EXTENSIONS, function( x ){
                     
                     var ext = GL.getExtension( x );
                     if ( !ext ) {
@@ -71,11 +78,11 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
                     if ( !ext ) {
                         ext = GL.getExtension( 'WEBKIT_' + x );
                     }
-                    this.extensions[ x ] = ext;
+                    this.__extensions[ x ] = ext;
                     
                 }, this );
 
-                GL.clearColor.apply( GL, this.get( 'color' ) );
+                // GL.clearColor.apply( GL, this.get( 'color' ) );
 
                 this.__context = GL;
                 return GL;
@@ -96,13 +103,17 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
             while( len-- ) {
 
                 renderable = displayArray[ len ];
-                this.renderDisplay( renderable );
+                // this.renderDisplay( renderable );
 
             }
+
+            this.renderDisplay( displayArray[2] );
 
         },
 
         renderDisplay: function( display ){
+
+            console.log( display );
 
             var GL = this.GL,
                 projector = this.projector;
@@ -110,51 +121,62 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
             var material    = display.material,
                 geometry    = display.geometry;
 
-            GL.enable( CONST.CULL_FACE );
+            var pass = this.buildPass( material, geometry );
 
-            // ---------- ---------- | Shader | ---------- ---------- //
-            var shader = this.buildShader( geometry, material );
+            var usedTextureUnits = 0;
 
-            if( shader !== this.shader ) {
+            pass.program.use( );
 
-                this.disableAttribArrays( );
-                this.shader = shader.use( );
-                this.enableAttribArrays( );
-
+            // projectionMatrixUniform
+            if( pass.projectionMatrixUniform ){
+                pass.projectionMatrixUniform.data = projector.projectionMatrix;
+            }
+            // cameraViewMatrixUniform
+            if( pass.cameraViewMatrixUniform ){
+                pass.cameraViewMatrixUniform.data = projector.cameraViewMatrix;
+            }
+            // modelViewMatrixUniform
+            if( pass.modelViewMatrixUniform ){
+                pass.modelViewMatrixUniform.data = projector.cameraViewMatrix.clone( ).multiply( display.worldMatrix );
+            }
+            // normalMatrixUniform
+            if( pass.normalMatrixUniform ){
+                pass.normalMatrixUniform.data = Mat3( ).invertMat4( display.worldMatrix ).transpose( );
             }
 
-            // ---------- ---------- | Uniforms | ---------- ---------- //
-            material.uniforms.modelMatrix.setData( new Float32Array( display.worldMatrix ) );
-            material.uniforms.viewMatrix.setData( new Float32Array( projector.cameraViewMatrix ) );
-            material.uniforms.projectionMatrix.setData( new Float32Array( projector.projectionMatrix ) );
-            // WebGLRenderer._.each( material.uniforms, function( x ){
-            //     x.setData( shader );
-            // } );
-            // -- 贴图 -- //
-            var map = material.map;
-            if( !!map && map.ready ) {
+            material.render( );
+            
+            pass.render( );
 
-                if( !map.data ) {
-                    this.processTexture( map );
-                }
 
-                GL.activeTexture( CONST.TEXTURE0 + map.index );
-                GL.bindTexture( CONST.TEXTURE_2D, map.data );
-                uniforms.map.makeValue( map.index, GL, shaderProgram );
 
-            }
-            // ---------- ---------- | Attributes | ---------- ---------- //
-            WebGLRenderer._.each( geometry.attributes, function( x ){
-                x.draw( );
-            } );
+            geometry.setData( GL );
 
-            shader.draw( );
+            geometry.drawElements( GL );
+
+
+        },
+
+        buildPass: function( material, geometry ){
+
+            var GL = this.GL,
+                pass = material.pass,
+                program = pass.program;
+
+            program.create( GL );
+
+            pass.create( );
+
+            // TODO: 
+            geometry.createIndex( GL );
+
+            return pass;
 
         },
 
         enableAttribArrays: function( ){
             if( this.shader ) {
-                WebGLRenderer._.each( this.shader.geometry.attributes, function( x ){
+                _.each( this.shader.geometry.attributes, function( x ){
                     x.enable( );
                 } );
             }
@@ -162,38 +184,10 @@ define( [ 'Renderer', 'Vec4', 'Shader', 'Uniform', 'CONST' ], function( Renderer
 
         disableAttribArrays: function( ){
             if( this.shader ) {
-                WebGLRenderer._.each( this.shader.geometry.attributes, function( x ){
+                _.each( this.shader.geometry.attributes, function( x ){
                     x.disable( );
                 } );
             }
-        },
-
-        buildShader: function( geometry, material ){
-
-            var GL = this.GL;
-
-            if( !material.shader ){
-
-                var shader = material.shader = new Shader( GL, geometry, material );
-                // ---------- Uniforms ---------- //
-                // 通用Uniforms
-                material.add( new Uniform( 'modelMatrix', 'Matrix4fv' ) );
-                material.add( new Uniform( 'viewMatrix', 'Matrix4fv' ) );
-                material.add( new Uniform( 'projectionMatrix', 'Matrix4fv' ) );
-
-                WebGLRenderer._.each( material.uniforms, function( x ){
-                    x.create( shader );
-                } );
-
-                // ---------- Attributes ---------- //
-                WebGLRenderer._.each( geometry.attributes, function( x ){
-                    x.create( shader );
-                } );
-
-            }
-
-            return material.shader;
-
         },
 
         clear: function( ){

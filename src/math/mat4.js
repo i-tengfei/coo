@@ -1,4 +1,4 @@
-define( function ( ) {
+define( [ 'Vec3' ], function ( Vec3 ) {
 
     function Mat4( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ){
 
@@ -6,7 +6,7 @@ define( function ( ) {
             return new Mat4( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 );
         }
 
-        var arr = Array.apply( this, arguments );
+        var arr = ( Array.isArray( m11 ) && m12 === undefined ) ? Array.apply( this, m11 ) : Array.apply( this, arguments );
 
         this[ 0  ] = ( arr[ 0 ] !== undefined ) ? arr[ 0 ] : 1;
         this[ 4  ] = arr[ 4  ] || 0;
@@ -54,10 +54,7 @@ define( function ( ) {
 
     Mat4.prototype.val = function( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ){
 
-        if( typeof m11 === 'number' && typeof m12 === 'number' && typeof m13 === 'number' && typeof m14 === 'number' && 
-            typeof m21 === 'number' && typeof m22 === 'number' && typeof m23 === 'number' && typeof m24 === 'number' && 
-            typeof m31 === 'number' && typeof m32 === 'number' && typeof m33 === 'number' && typeof m34 === 'number' && 
-            typeof m41 === 'number' && typeof m42 === 'number' && typeof m43 === 'number' && typeof m44 === 'number' ){
+        if( typeof m11 === 'number' && typeof m44 === 'number' ){
 
             this[ 0 ] = m11; this[ 4 ] = m12; this[ 8  ] = m13; this[ 12 ] = m14;
             this[ 1 ] = m21; this[ 5 ] = m22; this[ 9  ] = m23; this[ 13 ] = m24;
@@ -76,7 +73,21 @@ define( function ( ) {
             );
 
         }else{
-            return this.val( m11[ 0 ], m11[ 1 ], m11[ 2 ], m11[ 3 ], m11[ 4 ], m11[ 5 ], m11[ 6 ], m11[ 7 ], m11[ 8 ], m11[ 9 ], m11[ 10 ], m11[ 11 ], m11[ 12 ], m11[ 13 ], m11[ 14 ], m11[ 15 ] );
+            return this.val.apply( this, m11 );
+        }
+
+    };
+
+    Mat4.prototype.valGL = function( n0, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15 ){
+
+        if( typeof n0 === 'number' && typeof n15 === 'number' ){
+            this[ 0  ] = n0;  this[ 1  ] = n1;  this[ 2  ] = n2;  this[ 3  ] = n3;
+            this[ 4  ] = n4;  this[ 5  ] = n5;  this[ 6  ] = n6;  this[ 7  ] = n7;
+            this[ 8  ] = n8;  this[ 9  ] = n9;  this[ 10 ] = n10; this[ 11 ] = n11;
+            this[ 12 ] = n12; this[ 13 ] = n13; this[ 14 ] = n14; this[ 15 ] = n15;
+            return this;
+        }else if( Array.isArray( n0 ) && n1 === undefined ){
+            return this.valGL.apply( this, n0 );
         }
 
     };
@@ -284,38 +295,43 @@ define( function ( ) {
         return this.frustum( xmin, xmax, ymin, ymax, near, far );
 
     };
-    Mat4.prototype.lookAt = function( eye, target, up ) {
+    Mat4.prototype.lookAt = function( ) {
 
-        var x = eye.clone( );
-        var y = eye.clone( );
-        var z = eye.clone( );
+        var x = Vec3( ),
+            y = Vec3( ),
+            z = Vec3( );
 
-        z.sub( eye, target ).normalize( );
+        return function( eye, target, up ){
 
-        if ( z.length === 0 ) {
+            z.sub( eye, target ).normalize( );
 
-            z.z = 1;
+            if ( z.length1( ) === 0 ) {
 
-        }
+                z.z = 1;
 
-        x.cross( up, z ).normalize( );
+            }
 
-        if ( x.length === 0 ) {
-
-            z.x += 0.0001;
             x.cross( up, z ).normalize( );
 
+            if ( x.length1( ) === 0 ) {
+
+                z.x += 0.0001;
+                x.cross( up, z ).normalize( );
+
+            }
+
+            y.cross( z, x );
+
+            this.m11 = x.x; this.m12 = y.x; this.m13 = z.x;
+            this.m21 = x.y; this.m22 = y.y; this.m23 = z.y;
+            this.m31 = x.z; this.m32 = y.z; this.m33 = z.z;
+
+            return this;
+
         }
 
-        y.cross( z, x );
 
-        this.m11 = x.x; this.m12 = y.x; this.m13 = z.x;
-        this.m21 = x.y; this.m22 = y.y; this.m23 = z.y;
-        this.m31 = x.z; this.m32 = y.z; this.m33 = z.z;
-
-        return this;
-
-    };
+    }( );
     Mat4.prototype.maxScaleOnAxis = function ( ) {
 
         var scaleXSq = this[ 0 ] * this[ 0 ] + this[ 1 ] * this[ 1 ] + this[ 2  ] * this[ 2  ];
@@ -383,14 +399,13 @@ define( function ( ) {
         return this;
     };
 
-    Mat4.prototype.identity = function( ) {
+    Mat4.prototype.getMaxScaleOnAxis = function () {
 
-        return this.val(
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        );
+        var scaleXSq = this[0] * this[0] + this[1] * this[1] + this[2 ] * this[2 ];
+        var scaleYSq = this[4] * this[4] + this[5] * this[5] + this[6 ] * this[6 ];
+        var scaleZSq = this[8] * this[8] + this[9] * this[9] + this[10] * this[10];
+
+        return Math.sqrt( Math.max( scaleXSq, Math.max( scaleYSq, scaleZSq ) ) );
 
     };
 

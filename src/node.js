@@ -1,18 +1,18 @@
-define( [ 'UUID', 'Mat4', 'Vec3', 'Rotation' ], function ( UUID, Mat4, Vec3, Rotation ) {
+define( [ 'Base', 'Mat4', 'Vec3', 'Rotation' ], function ( Base, Mat4, Vec3, Rotation ) {
 
-    var Node = UUID.extend( {
+    var Node = Base.extend( {
 
-        defaults: {
-            position: [0,0,0],
-            rotation: [0,0,0],
-            target: [0,0,0],
-            scale: [1,1,1],
-            up: [0,1,0]
-        },
+        defaults: Base._.extend( {
+            position:   [0,0,0],
+            rotation:   [0,0,0],
+            target:     [0,0,0],
+            scale:      [1,1,1],
+            up:         [0,1,0]
+        }, Base.prototype.defaults ),
 
-        initialize: function( cid, options ){
+        initialize: function( options ){
 
-            Node.super.initialize.call( this, cid, options );
+            Node.super.initialize.call( this, options );
 
             this.localMatrix = Mat4( );
             this.worldMatrix = Mat4( );
@@ -24,14 +24,16 @@ define( [ 'UUID', 'Mat4', 'Vec3', 'Rotation' ], function ( UUID, Mat4, Vec3, Rot
 
         },
 
-        init: function( options ){
+        initOptions: function( options ){
+
+            Node.super.initOptions.call( this, options );
 
             this.position = Vec3( options.position );
             this.rotation = Rotation( options.rotation );
             this.target = Vec3( options.target );
             this.scale = Vec3( options.scale );
             this.up = Vec3( options.up );
-
+            
         },
 
         add: function( child ){
@@ -63,6 +65,54 @@ define( [ 'UUID', 'Mat4', 'Vec3', 'Rotation' ], function ( UUID, Mat4, Vec3, Rot
             }
             return this;
         },
+
+        decomposeMatrix: function( ){
+
+            var vector = Vec3( );
+            var matrix = Mat4( );
+
+            return function( m ){
+
+                m = m || this.localMatrix;
+
+                var sx = vector.val( m[0], m[1], m[2 ] ).length1( );
+                var sy = vector.val( m[4], m[5], m[6 ] ).length1( );
+                var sz = vector.val( m[8], m[9], m[10] ).length1( );
+
+                var det = m.determinant( );
+                if( det < 0 ) {
+                    sx = -sx;
+                }
+
+                this.position.val( m[12], m[13], m[14] );
+
+                matrix.val( m );
+
+                var invSX = 1 / sx;
+                var invSY = 1 / sy;
+                var invSZ = 1 / sz;
+
+                matrix[0 ] *= invSX;
+                matrix[1 ] *= invSX;
+                matrix[2 ] *= invSX;
+
+                matrix[4 ] *= invSY;
+                matrix[5 ] *= invSY;
+                matrix[6 ] *= invSY;
+
+                matrix[8 ] *= invSZ;
+                matrix[9 ] *= invSZ;
+                matrix[10] *= invSZ;
+
+                this.rotation.setFromRotationMatrix( matrix );
+
+                this.scale.val( sx, sy, sz );
+
+                return this;
+
+            };
+
+        }( ),
 
         remove: function( child ){
             var ind = this.children.indexOf( child );
@@ -109,6 +159,37 @@ define( [ 'UUID', 'Mat4', 'Vec3', 'Rotation' ], function ( UUID, Mat4, Vec3, Rot
 
             }
             return this;
+
+        },
+
+        clone: function( object, recursive ){
+
+            if( object === undefined ) object = new Node( {
+                position:   this.position,
+                rotation:   this.rotation,
+                target:     this.target,
+                scale:      this.scale,
+                up:         this.up,
+
+                name: this.name,
+            } );
+            if ( recursive === undefined ) recursive = true;
+
+            object.localMatrix.val( this.localMatrix );
+            object.worldMatrix.val( this.worldMatrix );
+
+            if ( recursive === true ) {
+
+                for ( var i = 0; i < this.children.length; i ++ ) {
+
+                    var child = this.children[ i ];
+                    object.add( child.clone( ) );
+
+                }
+
+            }
+
+            return object;
 
         }
 

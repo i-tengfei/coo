@@ -2,15 +2,13 @@ define( [ 'Base', 'Projector' ], function( Base, Projector ) {
 
     var Renderer = Base.extend( {
 
-        initialize: function( element ){
+        defaults: Base._.extend( {
+            element: null,
+            width: undefined,
+            height: undefined
+        }, Base.prototype.defaults ),
 
-            Renderer.super.initialize.call( this );
-            element = element || document.createElement( 'canvas' );
-            this.__element = element;
-            this.__context = this.createContext( element );
-            this.__width = element.clientWidth;
-            this.__height = element.clientHeight;
-            this.projector = new Projector( );
+        initialize: function( options ){
     
             this.__defineGetter__( 'element', function( ){
                 return this.__element;
@@ -37,6 +35,20 @@ define( [ 'Base', 'Projector' ], function( Base, Projector ) {
                 element.tagName.toLowerCase( ) === 'canvas' && ( element.height = h );
             } );
 
+            Renderer.super.initialize.call( this, options );
+
+            this.__context = this.createContext( this.element );
+            this.projector = new Projector( );
+
+        },
+
+        initOptions: function( options ){
+
+            Renderer.super.initOptions.call( this, options );
+            this.__element = options.element || document.createElement( 'canvas' );
+            this.width = options.width || this.element.clientWidth;
+            this.height = options.height || this.element.clientHeight;
+
         },
 
         render: function( scene, camera ){
@@ -44,7 +56,9 @@ define( [ 'Base', 'Projector' ], function( Base, Projector ) {
             this.projector.projectScene( scene, camera );
         },
 
-        createContext: function( element ){ },
+        createContext: function( element ){
+            console.error( '必须覆盖 createContext 方法！' );
+        },
 
         clear: function( ){ }
 

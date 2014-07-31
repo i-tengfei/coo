@@ -9,20 +9,23 @@ define( [ 'Camera' ], function( Camera ) {
             far: 2000
         }, Camera.prototype.defaults ),
 
-        initialize: function( cid, options ){
+        initialize: function( options ){
 
-            PerspectiveCamera.super.initialize.call( this, cid, options );
+            PerspectiveCamera.super.initialize.call( this, options );
             
             this.updateProjectionMatrix( );
 
         },
 
-        init: function( options ){
-            Camera.prototype.init.call( this, options );
+        initOptions: function( options ){
+
             this.fov = options.fov;
             this.aspect = options.aspect;
             this.near = options.near;
             this.far = options.far;
+
+            PerspectiveCamera.super.initOptions.call( this, options );
+            
         },
 
         updateProjectionMatrix: function( ){
